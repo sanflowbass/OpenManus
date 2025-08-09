@@ -1,0 +1,31 @@
+server:
+  port: 3000
+  corsOrigins: ["*"]
+
+binance:
+  symbolSpot: EURUSDT
+  intervals: ["1m", "5m"]
+  reconnectMs: 5000
+
+signals:
+  emaPeriods: [9, 21]
+  rsiPeriod: 14
+  macd:
+    fast: 12
+    slow: 26
+    signal: 9
+  atrPeriod: 14
+  confirmMultiTF: true
+
+security:
+  jwtSecret: dev-secret-change
+  adminEmail: admin@example.com
+  adminPassword: ChangeMe123!
+
+payments:
+  currency: usd
+  productName: EURUSD Signals Subscription
+  priceMonthly: 1999
+
+database:
+  file: data.sqlite
