@@ -1,0 +1,45 @@
+{
+  "name": "workspace",
+  "version": "1.0.0",
+  "description": "English | [中文](README_zh.md) | [한국어](README_ko.md) | [日本語](README_ja.md)",
+  "main": "index.js",
+  "directories": {
+    "example": "examples"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sanflowbass/OpenManus.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sanflowbass/OpenManus/issues"
+  },
+  "homepage": "https://github.com/sanflowbass/OpenManus#readme",
+  "dependencies": {
+    "axios": "^1.11.0",
+    "better-sqlite3": "^12.2.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "stripe": "^18.4.0",
+    "technicalindicators": "^3.1.0",
+    "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.2.1",
+    "@types/ws": "^8.18.1",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.9.2"
+  }
+}
