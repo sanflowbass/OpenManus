@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { authMiddleware, createToken, hashPassword, verifyPassword, requireActiveSubscription } from './auth.js';
 import { getDb, listSignals } from './db.js';
+import { createCheckoutSession } from './payments/stripe.js';
 
 const router = Router();
 
@@ -43,6 +44,27 @@ router.post('/admin/grant', authMiddleware(true), (req, res) => {
   const newUntil = base + days * 24 * 60 * 60 * 1000;
   getDb().prepare('UPDATE users SET active_until = ? WHERE id = ?').run(newUntil, userId);
   res.json({ userId, activeUntil: newUntil });
+});
+
+router.post('/payments/checkout', authMiddleware(), async (req, res) => {
+  try {
+    const user = (req as any).user as { sub: number; email: string };
+    const amount = Number(process.env.PAY_PRICE || '1999');
+    const currency = process.env.PAY_CURRENCY || 'usd';
+    const productName = process.env.PAY_PRODUCT || 'EURUSD Signals Subscription';
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    const url = await createCheckoutSession({
+      userId: user.sub,
+      email: user.email,
+      amountCents: amount,
+      currency,
+      productName,
+      serverBaseUrl: baseUrl
+    });
+    res.json({ url });
+  } catch (e) {
+    res.status(500).json({ error: String(e) });
+  }
 });
 
 export default router;

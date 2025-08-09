@@ -22,8 +22,13 @@ async function main() {
   app.use(helmet());
   app.use(cors({ origin: cfg.server.corsOrigins.includes('*') ? true : cfg.server.corsOrigins }));
   app.use(morgan('combined'));
+  // Stripe webhook requires raw body; mount it before JSON parser
+  app.post('/api/payments/webhook', express.raw({ type: 'application/json' }), (await import('./payments/stripe.js')).stripeWebhookHandler);
   app.use(bodyParser.json());
   app.use(rateLimit({ windowMs: 60_000, max: 300 }));
+
+  // Static site
+  app.use(express.static('src/public'));
 
   app.use('/api', router);
 

@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import { getDb } from './db.js';
 
 const JWT_TTL = '7d';
@@ -31,9 +31,11 @@ export function authMiddleware(requireAdmin = false) {
     if (!header) return res.status(401).json({ error: 'missing auth header' });
     const token = header.replace('Bearer ', '').trim();
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as JwtPayload;
-      (req as any).user = decoded;
-      if (requireAdmin && decoded.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
+      const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
+      if (typeof decoded === 'string') return res.status(401).json({ error: 'invalid token' });
+      const payload = decoded as unknown as JwtPayload;
+      (req as any).user = payload;
+      if (requireAdmin && payload.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
       next();
     } catch (err) {
       return res.status(401).json({ error: 'invalid token' });

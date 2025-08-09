@@ -11,6 +11,8 @@ export type SignalOutput = {
   reasons: string[];
 };
 
+type MacdPoint = { MACD: number; signal: number; histogram?: number };
+
 export class SignalEngine {
   private emaFast: number;
   private emaSlow: number;
@@ -81,18 +83,21 @@ export class SignalEngine {
     const emaF = computeEma(closes, this.emaFast);
     const emaS = computeEma(closes, this.emaSlow);
     const rsi = computeRsi(closes, this.rsiPeriod);
-    const macd = computeMacd(closes, this.macdFast, this.macdSlow, this.macdSignal);
+    const macd = computeMacd(closes, this.macdFast, this.macdSlow, this.macdSignal) as unknown as MacdPoint[];
     const atr = computeAtr(highs, lows, closes, this.atrPeriod);
 
-    const lastIdx = closes.length - 1;
-    const emaFLast = emaF[emaF.length - 1];
-    const emaSLast = emaS[emaS.length - 1];
-    const rsiLast = rsi[rsi.length - 1];
-    const macdLast = macd[macd.length - 1];
-    const macdPrev = macd[macd.length - 2];
-    const atrLast = atr[atr.length - 1];
+    if (emaF.length < 2 || emaS.length < 1 || rsi.length < 1 || macd.length < 2 || atr.length < 1) return null;
 
-    const price = closes[lastIdx];
+    const lastCandle = candles[candles.length - 1]!;
+    const price = lastCandle.c;
+
+    const emaFLast = emaF[emaF.length - 1]!;
+    const emaSLast = emaS[emaS.length - 1]!;
+    const rsiLast = rsi[rsi.length - 1]!;
+    const macdLast = macd[macd.length - 1]!;
+    const macdPrev = macd[macd.length - 2]!;
+    const atrLast = atr[atr.length - 1]!;
+
     const range = atrLast;
 
     let score = 0;
@@ -102,8 +107,8 @@ export class SignalEngine {
     const trendUp = emaFLast > emaSLast;
     const trendDown = emaFLast < emaSLast;
 
-    const emaSlopeUp = emaFLast - emaF[emaF.length - 2] > 0;
-    const emaSlopeDown = emaFLast - emaF[emaF.length - 2] < 0;
+    const emaSlopeUp = emaFLast - emaF[emaF.length - 2]! > 0;
+    const emaSlopeDown = emaFLast - emaF[emaF.length - 2]! < 0;
 
     // Momentum: RSI and MACD cross
     const macdCrossUp = macdPrev.MACD < macdPrev.signal && macdLast.MACD > macdLast.signal;
@@ -158,7 +163,8 @@ export class SignalEngine {
     const idx = order.indexOf(interval);
     if (idx === -1) return null;
     for (let i = idx + 1; i < order.length; i++) {
-      if (this.historyByInterval.has(order[i])) return order[i];
+      const key = order[i];
+      if (key && this.historyByInterval.has(key)) return key;
     }
     return null;
   }
@@ -169,8 +175,9 @@ export class SignalEngine {
     const closes = candles.map(c => c.c);
     const emaF = computeEma(closes, this.emaFast);
     const emaS = computeEma(closes, this.emaSlow);
-    const emaFLast = emaF[emaF.length - 1];
-    const emaSLast = emaS[emaS.length - 1];
+    if (emaF.length < 1 || emaS.length < 1) return true;
+    const emaFLast = emaF[emaF.length - 1]!;
+    const emaSLast = emaS[emaS.length - 1]!;
     if (candidate === 'CALL') return emaFLast >= emaSLast;
     return emaFLast <= emaSLast;
   }
