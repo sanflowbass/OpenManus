@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EURUSD Signals</title>
+  <style>
+    body{font-family:system-ui,Arial,sans-serif;margin:20px;}
+    input,button{padding:8px;margin:4px;}
+    .row{margin:8px 0}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;}
+  </style>
+</head>
+<body>
+  <h2>EURUSD Signals</h2>
+  <div class="row">
+    <input id="email" placeholder="email" />
+    <input id="password" type="password" placeholder="senha" />
+    <button id="register">Registrar</button>
+    <button id="login">Login</button>
+  </div>
+  <div class="row">
+    <button id="grantDemo">Conceder 1 dia (admin)</button>
+    <button id="checkout">Assinar (Stripe)</button>
+  </div>
+  <div class="row">
+    <button id="loadSignals">Carregar Sinais</button>
+  </div>
+  <pre id="out"></pre>
+
+  <script>
+    const out = document.getElementById('out');
+    let token = '';
+
+    function log(obj){ out.textContent = JSON.stringify(obj, null, 2); }
+
+    async function request(path, opts={}){
+      opts.headers = opts.headers || { 'Content-Type': 'application/json' };
+      if (token) opts.headers['Authorization'] = 'Bearer ' + token;
+      const res = await fetch('/api' + path, opts);
+      if (!res.ok) throw new Error(await res.text());
+      return res.headers.get('content-type')?.includes('application/json') ? res.json() : res.text();
+    }
+
+    document.getElementById('register').onclick = async () => {
+      try{
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const r = await request('/auth/register', { method: 'POST', body: JSON.stringify({ email, password }) });
+        token = r.token; log({ registered: true, token: !!token });
+      }catch(e){ log({ error: String(e) }); }
+    };
+
+    document.getElementById('login').onclick = async () => {
+      try{
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const r = await request('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
+        token = r.token; log({ logged: true, token: !!token });
+      }catch(e){ log({ error: String(e) }); }
+    };
+
+    document.getElementById('grantDemo').onclick = async () => {
+      try{
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const r = await request('/admin/grant', { method: 'POST', body: JSON.stringify({ userId: payload.sub, days: 1 }) });
+        log(r);
+      }catch(e){ log({ error: String(e) }); }
+    };
+
+    document.getElementById('checkout').onclick = async () => {
+      try{
+        const r = await request('/payments/checkout', { method: 'POST' });
+        window.location.href = r.url;
+      }catch(e){ log({ error: String(e) }); }
+    };
+
+    document.getElementById('loadSignals').onclick = async () => {
+      try{
+        const r = await request('/signals/recent?symbol=EURUSDT&limit=25');
+        log(r);
+      }catch(e){ log({ error: String(e) }); }
+    };
+  </script>
+</body>
+</html>
