@@ -1,0 +1,17 @@
+version: 1
+proxy:
+  http: http://127.0.0.1:8080
+  https: http://127.0.0.1:8080
+  socks: null
+playwright:
+  headless: true
+  user_agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36
+  timeout_ms: 30000
+zap:
+  host: 127.0.0.1
+  port: 8090
+  api_key: ${ZAP_API_KEY}
+  context_name: hunter-context
+  policy: Default Policy
+  spider_max_children: 20
+  ajax_spider: true

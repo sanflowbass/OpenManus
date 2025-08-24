@@ -1,0 +1,8 @@
+playwright
+httpx[socks]
+curl_cffi
+rich
+pyyaml
+click
+requests
+python-dotenv
